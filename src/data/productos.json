@@ -1,0 +1,93 @@
+[
+    {
+      "id": 1,
+      "title": "Camiseta",
+      "description": "Camiseta de algodón 100%",
+      "price": 19.99,
+      "img": "https://example.com/camiseta.jpg",
+      "code": "CAM123",
+      "stock": 50
+    },
+    {
+      "id": 2,
+      "title": "Pantalones",
+      "description": "Pantalones vaqueros de corte slim",
+      "price": 39.99,
+      "img": "https://example.com/pantalones.jpg",
+      "code": "PAN456",
+      "stock": 30
+    },
+    {
+      "id": 3,
+      "title": "Zapatillas",
+      "description": "Zapatillas deportivas de running",
+      "price": 59.99,
+      "img": "https://example.com/zapatillas.jpg",
+      "code": "ZAP789",
+      "stock": 20
+    },
+    {
+      "id": 4,
+      "title": "Sudadera",
+      "description": "Sudadera con capucha y bolsillo canguro",
+      "price": 29.99,
+      "img": "https://example.com/sudadera.jpg",
+      "code": "SUD012",
+      "stock": 40
+    },
+    {
+      "id": 5,
+      "title": "Chaqueta",
+      "description": "Chaqueta impermeable para la lluvia",
+      "price": 49.99,
+      "img": "https://example.com/chaqueta.jpg",
+      "code": "CHA345",
+      "stock": 25
+    },
+    {
+      "id": 6,
+      "title": "Gorra",
+      "description": "Gorra de béisbol ajustable",
+      "price": 14.99,
+      "img": "https://example.com/gorra.jpg",
+      "code": "GOR678",
+      "stock": 60
+    },
+    {
+      "id": 7,
+      "title": "Mochila",
+      "description": "Mochila escolar resistente al agua",
+      "price": 24.99,
+      "img": "https://example.com/mochila.jpg",
+      "code": "MOC901",
+      "stock": 35
+    },
+    {
+      "id": 8,
+      "title": "Reloj",
+      "description": "Reloj digital con cronómetro y alarma",
+      "price": 79.99,
+      "img": "https://example.com/reloj.jpg",
+      "code": "REL234",
+      "stock": 15
+    },
+    {
+      "id": 9,
+      "title": "Auriculares",
+      "description": "Auriculares inalámbricos con cancelación de ruido",
+      "price": 99.99,
+      "img": "https://example.com/auriculares.jpg",
+      "code": "AUR567",
+      "stock": 45
+    },
+    {
+      "id": 10,
+      "title": "Lentes de sol",
+      "description": "Lentes de sol polarizadas UV400",
+      "price": 29.99,
+      "img": "https://example.com/lentes.jpg",
+      "code": "LEN890",
+      "stock": 50
+    }
+  ]
+  
