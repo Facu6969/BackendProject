@@ -1,0 +1,72 @@
+import { promises as fs } from "fs";
+
+class CartManager {
+    static ultId = 0;
+
+    constructor(path) {
+        this.carts = [];
+        this.path = path;
+        this.cargarArray();
+    }
+
+    async cargarArray() {
+        try {
+            this.carts = await this.leerArchivo();
+        } catch (error) {
+            console.log("Error al inicializar CartManager", error.message);
+        }
+    }
+
+    async createCart() {
+        const lastCartId = this.carts.length > 0 ? this.carts[this.carts.length - 1].id : 0;
+        const nuevoCarrito = {
+            id: lastCartId + 1,
+            products: []
+        };
+        this.carts.push(nuevoCarrito);
+        await this.guardarArchivo(this.carts);
+    }
+
+    async getCartById(id) {
+        try {
+            const arrayCarts = await this.leerArchivo();
+            const buscado = arrayCarts.find(item => item.id === id);
+            return buscado || null;
+        } catch (error) {
+            console.log("Error al buscar carrito por id", error);
+        }
+    }
+
+    async addProductToCart(cartId, productId) {
+        try {
+            const arrayCarts = await this.leerArchivo();
+            const cartIndex = arrayCarts.findIndex(cart => cart.id === cartId);
+            if (cartIndex === -1) {
+                console.log("Carrito no encontrado");
+                return;
+            }
+            const cart = arrayCarts[cartIndex];
+            const productIndex = cart.products.findIndex(product => product.product === productId);
+            if (productIndex !== -1) {
+                cart.products[productIndex].quantity += 1;
+            } else {
+                cart.products.push({ product: productId, quantity: 1 });
+            }
+            await this.guardarArchivo(arrayCarts);
+        } catch (error) {
+            console.log("Error al agregar producto al carrito", error);
+        }
+    }
+
+    async leerArchivo() {
+        const respuesta = await fs.readFile(this.path, "utf-8");
+        const arrayCarts = JSON.parse(respuesta);
+        return arrayCarts;
+    }
+
+    async guardarArchivo(arrayCarts) {
+        await fs.writeFile(this.path, JSON.stringify(arrayCarts, null, 2));
+    }
+}
+
+export default CartManager;
