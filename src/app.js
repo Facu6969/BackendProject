@@ -12,61 +12,71 @@ const productManager = new ProductManager("./src/data/productos.json");
 const cartManager = new CartManager("./src/data/carrito.json");
 
 
-//RUTAS
+//RUTA raiz
 app.get("/", (req, res) => {
     res.send("Hola Mundo");
 })
 
 //RUTA /products
 
-app.get("/products", async (req, res) => {
+app.get("/api/products", async (req, res) => {
     const arrayProductos = await productManager.getProducts();
-    res.send(arrayProductos);
+    res.status(200).send(arrayProductos);
 });
 
 //RUTA /products:id
 
 app.get("/api/products/:pid", async (req, res) => {
-    let id = req.params.pid;
-
+    const id = req.params.pid;
     const producto = await productManager.getProductById(parseInt(id));
-
-    if( !producto ) {
-        res.send("no se encuentra el producto");
+    if (!producto) {
+        res.status(404).send("No se encuentra el producto");
     } else {
-        res.send({producto});
+        res.status(200).send(producto);
     }
 });
 
 app.post("/api/products", async (req, res) => {
     const nuevoProducto = req.body;
     await productManager.addProduct(nuevoProducto);
-    res.send("Producto agregado");
+    res.status(201).send("Producto agregado");
 });
 
 app.put("/api/products/:pid", async (req, res) => {
     const id = req.params.pid;
     const productoActualizado = req.body;
-    await productManager.updateProduct(parseInt(id), productoActualizado);
-    res.send("Producto actualizado");
+    const resultado = await productManager.updateProduct(parseInt(id), productoActualizado);
+    if (resultado) {
+        res.status(200).send("Producto actualizado");
+    } else {
+        res.status(404).send("No se encuentra el producto");
+    }
 });
 
 app.delete("/api/products/:pid", async (req, res) => {
     const id = req.params.pid;
-    await productManager.deleteProduct(parseInt(id));
-    res.send("Producto eliminado");
+    const resultado = await productManager.deleteProduct(parseInt(id));
+    if (resultado) {
+        res.status(200).send("Producto eliminado");
+    } else {
+        res.status(404).send("No se encuentra el producto");
+    }
 });
 
-// Rutas de carritos
+// RUTAS de carritos
 app.post("/api/carts", async (req, res) => {
     await cartManager.createCart();
-    res.send("Carrito creado");
+    res.status(201).send("Carrito creado");
 });
 
 app.get("/api/carts/:cid", async (req, res) => {
     const id = req.params.cid;
     const carrito = await cartManager.getCartById(parseInt(id));
-    res.send(carrito);
+    if (!carrito) {
+        res.status(404).send("No se encuentra el carrito");
+    } else {
+        res.status(200).send(carrito);
+    }
 });
 
 app.post("/api/carts/:cid/product/:pid", async (req, res) => {

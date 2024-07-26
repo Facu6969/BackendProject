@@ -36,9 +36,9 @@ class ProductManager {
             id: lastProductId + 1,
             title,
             description,
-            price,
-            img,
             code,
+            price,
+            status,
             stock,
             category,
             thumbnails
@@ -65,57 +65,38 @@ class ProductManager {
         try {
             const arrayProductos = await this.leerArchivo();
             const buscado = arrayProductos.find(item => item.id === id); 
-
-            if (!buscado) {
-                console.log("producto no encontrado"); 
-                return null; 
-            } else {
-                console.log("Producto encontrado"); 
-                return buscado; 
-            }
+            return buscado || null;
         } catch (error) {
             console.log("Error al buscar por id", error); 
         }
     }
 
-    //Métodos auxiliares: 
-    async leerArchivo() {
-        const respuesta = await fs.readFile(this.path, "utf-8");
-        const arrayProductos = JSON.parse(respuesta);
-        return arrayProductos;
-    }
-
-    async guardarArchivo(arrayProductos) {
-        await fs.writeFile(this.path, JSON.stringify(arrayProductos, null, 2));
-    }
-
+    
     //Método para actualizar productos: 
 
     async updateProduct(id, productoActualizado) {
         try {
             const arrayProductos = await this.leerArchivo(); 
+            const index = arrayProductos.findIndex(item => item.id === id); 
 
-            const index = arrayProductos.findIndex( item => item.id === id); 
-
-            if(index !== -1) {
-                arrayProductos[index] = {...arrayProductos[index], ...productoActualizado} ; 
+            if (index !== -1) {
+                arrayProductos[index] = { ...arrayProductos[index], ...productoActualizado };
                 await this.guardarArchivo(arrayProductos); 
                 console.log("Producto actualizado"); 
             } else {
                 console.log("No se encuentra el producto"); 
             }
         } catch (error) {
-            console.log("Error al actualizar productos"); 
+            console.log("Error al actualizar productos", error);
         }
     }
 
     async deleteProduct(id) {
         try {
             const arrayProductos = await this.leerArchivo(); 
+            const index = arrayProductos.findIndex(item => item.id === id); 
 
-            const index = arrayProductos.findIndex( item => item.id === id); 
-
-            if(index !== -1) {
+            if (index !== -1) {
                 arrayProductos.splice(index, 1); 
                 await this.guardarArchivo(arrayProductos); 
                 console.log("Producto eliminado"); 
@@ -123,8 +104,26 @@ class ProductManager {
                 console.log("No se encuentra el producto"); 
             }
         } catch (error) {
-            console.log("Tenemos un error al eliminar productos"); 
+            console.log("Tenemos un error al eliminar productos", error);
         }
+    }
+
+    async leerArchivo() {
+        try {
+            const respuesta = await fs.readFile(this.path, "utf-8");
+            if (respuesta) {
+                return JSON.parse(respuesta);
+            } else {
+                return [];
+            }
+        } catch (error) {
+            console.log("Error al leer el archivo", error);
+            return [];
+        }
+    }
+
+    async guardarArchivo(arrayProductos) {
+        await fs.writeFile(this.path, JSON.stringify(arrayProductos, null, 2));
     }
 
 }

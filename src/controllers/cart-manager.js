@@ -59,9 +59,17 @@ class CartManager {
     }
 
     async leerArchivo() {
-        const respuesta = await fs.readFile(this.path, "utf-8");
-        const arrayCarts = JSON.parse(respuesta);
-        return arrayCarts;
+        try {
+            const respuesta = await fs.readFile(this.path, "utf-8");
+            if (respuesta) {
+                return JSON.parse(respuesta);
+            } else {
+                return [];
+            }
+        } catch (error) {
+            console.log("Error al leer el archivo", error);
+            return [];
+        }
     }
 
     async guardarArchivo(arrayCarts) {
