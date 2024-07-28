@@ -20,8 +20,14 @@ app.get("/", (req, res) => {
 //RUTA /products
 
 app.get("/api/products", async (req, res) => {
+    const limit = parseInt(req.query.limit);
     const arrayProductos = await productManager.getProducts();
-    res.status(200).send(arrayProductos);
+    
+    if (!isNaN(limit) && limit > 0) {
+        res.status(200).send(arrayProductos.slice(0, limit));
+    } else {
+        res.status(200).send(arrayProductos);
+    }
 });
 
 //RUTA /products:id

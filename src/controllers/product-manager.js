@@ -64,10 +64,11 @@ class ProductManager {
     async getProductById(id) {
         try {
             const arrayProductos = await this.leerArchivo();
-            const buscado = arrayProductos.find(item => item.id === id); 
+            const buscado = arrayProductos.find(item => item.id === id);
             return buscado || null;
         } catch (error) {
-            console.log("Error al buscar por id", error); 
+            console.log("Error al buscar por id", error);
+            return null;
         }
     }
 
