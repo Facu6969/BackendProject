@@ -7,7 +7,7 @@ const PUERTO =8080;
 
 app.use(express.json());
 
-// importar el  productManager
+// importar el  productManager y cartManager
 const productManager = new ProductManager("./src/data/productos.json");
 const cartManager = new CartManager("./src/data/carrito.json");
 
@@ -20,7 +20,7 @@ app.get("/", (req, res) => {
 //RUTA /products
 
 app.get("/api/products", async (req, res) => {
-    const limit = parseInt(req.query.limit);
+    const limit = parseInt(req.query.limit); //limitar la cantidad de productos devueltos
     const arrayProductos = await productManager.getProducts();
     
     if (!isNaN(limit) && limit > 0) {
@@ -43,9 +43,13 @@ app.get("/api/products/:pid", async (req, res) => {
 });
 
 app.post("/api/products", async (req, res) => {
-    const nuevoProducto = req.body;
-    await productManager.addProduct(nuevoProducto);
-    res.status(201).send("Producto agregado");
+    try {
+        const nuevoProducto = req.body;
+        await productManager.addProduct(nuevoProducto);
+        res.status(201).send("Producto agregado");
+    } catch (error) {
+        res.status(400).send(error.message);
+    }
 });
 
 app.put("/api/products/:pid", async (req, res) => {
@@ -88,8 +92,12 @@ app.get("/api/carts/:cid", async (req, res) => {
 app.post("/api/carts/:cid/product/:pid", async (req, res) => {
     const cid = req.params.cid;
     const pid = req.params.pid;
-    await cartManager.addProductToCart(parseInt(cid), parseInt(pid));
-    res.send("Producto agregado al carrito");
+    const resultado = await cartManager.addProductToCart(parseInt(cid), parseInt(pid));
+    if (resultado) {
+        res.status(200).send("Producto agregado al carrito");
+    } else {
+        res.status(404).send("No se encuentra el carrito o producto");
+    }
 });
 
 //LISTEN

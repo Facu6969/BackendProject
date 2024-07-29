@@ -1,4 +1,5 @@
 import { promises as fs } from "fs";
+import ProductManager from "./product-manager.js";
 
 class CartManager {
     static ultId = 0;
@@ -6,6 +7,7 @@ class CartManager {
     constructor(path) {
         this.carts = [];
         this.path = path;
+        this.productManager = new ProductManager("./src/data/productos.json");
         this.cargarArray();
     }
 
@@ -43,8 +45,15 @@ class CartManager {
             const cartIndex = arrayCarts.findIndex(cart => cart.id === cartId);
             if (cartIndex === -1) {
                 console.log("Carrito no encontrado");
-                return;
+                return false;
             }
+
+            const product = await this.productManager.getProductById(productId);
+            if (!product) {
+                console.log("Producto no encontrado");
+                return false;
+            }
+
             const cart = arrayCarts[cartIndex];
             const productIndex = cart.products.findIndex(product => product.product === productId);
             if (productIndex !== -1) {
