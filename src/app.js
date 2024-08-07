@@ -5,6 +5,8 @@ import CartManager from "./controllers/cart-manager.js";
 const app = express();
 const PUERTO =8080;
 
+//Middleware
+
 app.use(express.json());
 
 // importar el  productManager y cartManager
