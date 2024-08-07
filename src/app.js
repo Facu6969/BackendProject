@@ -1,13 +1,20 @@
 import express from "express";
 import ProductManager  from "./controllers/product-manager.js";
 import CartManager from "./controllers/cart-manager.js";
+import { engine } from "express-handlebars";
 
 const app = express();
 const PUERTO =8080;
 
-//Middleware
+//config Handlebars
+app.engine("handlebars", engine({ defaultLayout: "main" }));
+app.set("view engine", "handlebars");
+app.set("views", "./src/views");
 
+//Middleware
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(express.static('public')); // Servir archivos estáticos desde la carpeta 'public'
 
 // importar el  productManager y cartManager
 const productManager = new ProductManager("./src/data/productos.json");
@@ -15,9 +22,10 @@ const cartManager = new CartManager("./src/data/carrito.json");
 
 
 //RUTA raiz
-app.get("/", (req, res) => {
-    res.send("Hola Mundo");
-})
+app.get("/", async (req, res) => {
+    const productos = await productManager.getProducts();
+    res.render("home", { products: productos });
+});
 
 //RUTA /products
 
