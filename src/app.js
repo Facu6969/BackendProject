@@ -2,8 +2,12 @@ import express from "express";
 import ProductManager  from "./controllers/product-manager.js";
 import CartManager from "./controllers/cart-manager.js";
 import { engine } from "express-handlebars";
+import { createServer } from "http";
+import { Server } from "socket.io";
 
 const app = express();
+const server = createServer(app); // Crear un servidor HTTP
+const io = new Server(server); // Crear una instancia de socket.io con el servidor HTTP
 const PUERTO =8080;
 
 //config Handlebars
@@ -25,6 +29,12 @@ const cartManager = new CartManager("./src/data/carrito.json");
 app.get("/", async (req, res) => {
     const productos = await productManager.getProducts();
     res.render("home", { products: productos });
+});
+
+// RUTA para la vista real-time products con Socket.io
+app.get("/realtimeproducts", async (req, res) => {
+    const productos = await productManager.getProducts();
+    res.render("realTimeProducts", { products: productos });
 });
 
 //RUTA /products
@@ -56,6 +66,8 @@ app.post("/api/products", async (req, res) => {
     try {
         const nuevoProducto = req.body;
         await productManager.addProduct(nuevoProducto);
+        const productosActualizados = await productManager.getProducts();
+        io.emit('productUpdated', productosActualizados); // Emitimos el evento de actualización
         res.status(201).send("Producto agregado");
     } catch (error) {
         res.status(400).send(error.message);
@@ -67,6 +79,7 @@ app.put("/api/products/:pid", async (req, res) => {
     const productoActualizado = req.body;
     const resultado = await productManager.updateProduct(parseInt(id), productoActualizado);
     if (resultado) {
+        io.emit('productUpdated', await productManager.getProducts());
         res.status(200).send("Producto actualizado");
     } else {
         res.status(404).send("No se encuentra el producto");
@@ -110,9 +123,22 @@ app.post("/api/carts/:cid/product/:pid", async (req, res) => {
     }
 });
 
+// Configurar la conexión de Socket.io
+io.on('connection', (socket) => {
+    console.log('Nuevo cliente conectado');
+
+    // Manejar el nuevo producto desde el formulario en tiempo real
+    socket.on('newProduct', async (productData) => {
+        await productManager.addProduct(productData);
+        const productosActualizados = await productManager.getProducts();
+        io.emit('productUpdated', productosActualizados);
+        console.log('Evento productUpdated emitido', productosActualizados);
+    });
+});
+
 //LISTEN
 
-app.listen(PUERTO, () => {
+server.listen(PUERTO, () => {
     console.log(`Escuchando en el http://localhost:${PUERTO}`);
 
 })

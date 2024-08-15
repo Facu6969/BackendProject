@@ -43,9 +43,11 @@ class ProductManager {
             category,
             thumbnails
         };
+        console.log('Nuevo producto a agregar:', nuevoProducto);
 
         //4) Metemos el producto al array. 
         this.products.push(nuevoProducto);
+        console.log('Array de productos después de agregar:', this.products);
 
         //5) Lo guardamos en el archivo: 
         await this.guardarArchivo(this.products);
@@ -124,7 +126,12 @@ class ProductManager {
     }
 
     async guardarArchivo(arrayProductos) {
-        await fs.writeFile(this.path, JSON.stringify(arrayProductos, null, 2));
+        try {
+            await fs.writeFile(this.path, JSON.stringify(arrayProductos, null, 2));
+            console.log('Archivo guardado exitosamente.');
+        } catch (error) {
+            console.log('Error al guardar el archivo:', error);
+        }
     }
 
 }

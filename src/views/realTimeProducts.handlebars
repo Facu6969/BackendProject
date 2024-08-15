@@ -1,0 +1,60 @@
+{{!-- views/realTimeProducts.handlebars --}}
+<h1>Productos en tiempo real</h1>
+<ul id="product-list">
+    {{#each products}}
+        <li>{{title}} - ${{price}}</li>
+    {{/each}}
+</ul>
+
+<form id="product-form">
+    <input type="text" id="title" placeholder="Título" required>
+    <input type="text" id="description" placeholder="Descripción" required>
+    <input type="text" id="code" placeholder="Código" required>
+    <input type="number" id="price" placeholder="Precio" required>
+    <input type="number" id="stock" placeholder="Stock" required>
+    <input type="text" id="category" placeholder="Categoría" required>
+    <input type="text" id="thumbnails" placeholder="URL de Imagen (opcional)">
+    <button type="submit">Agregar Producto</button>
+</form>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+    const socket = io();
+
+    document.getElementById('product-form').addEventListener('submit', (event) => {
+        event.preventDefault();
+
+        const title = document.getElementById('title').value;
+        const description = document.getElementById('description').value;
+        const code = document.getElementById('code').value;
+        const price = parseFloat(document.getElementById('price').value);
+        const stock = parseInt(document.getElementById('stock').value);
+        const category = document.getElementById('category').value;
+        const thumbnails = document.getElementById('thumbnails').value;
+
+        const newProduct = {
+            title,
+            description,
+            code,
+            price,
+            stock,
+            category,
+            thumbnails: thumbnails ? [thumbnails] : []
+        };
+
+        console.log('Enviando nuevo producto:', newProduct);
+        socket.emit('newProduct', newProduct);
+    });
+
+    socket.on('productUpdated', (products) => {
+        console.log('Productos actualizados:', products);
+        const productList = document.getElementById('product-list');
+        productList.innerHTML = '';
+
+        products.forEach(product => {
+            const li = document.createElement('li');
+            li.textContent = `${product.title} - $${product.price}`;
+            productList.appendChild(li);
+        });
+    });
+</script>
