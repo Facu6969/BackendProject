@@ -1,13 +1,16 @@
 [
   {
     "id": 1,
-    "title": "Camiseta",
-    "description": "Camiseta de algodón 100%",
+    "title": "trapito",
+    "description": "Trapito de algodón 100%",
     "price": 19.99,
     "img": "https://example.com/camiseta.jpg",
     "code": "CAM123",
-    "stock": 50,
-    "category": "Ropa"
+    "stock": 20,
+    "category": "Ropa",
+    "thumbnails": [
+      "https://example.com/Trapito.jpg"
+    ]
   },
   {
     "id": 2,
@@ -99,5 +102,4 @@
     "stock": 50,
     "category": "Accesorios"
   }
-  
 ]

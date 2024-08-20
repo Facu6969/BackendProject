@@ -66,6 +66,7 @@ app.post("/api/products", async (req, res) => {
     try {
         const nuevoProducto = req.body;
         await productManager.addProduct(nuevoProducto);
+        console.log(nuevoProducto);
         const productosActualizados = await productManager.getProducts();
         io.emit('productUpdated', productosActualizados); // Emitimos el evento de actualización
         res.status(201).send("Producto agregado");
@@ -88,11 +89,17 @@ app.put("/api/products/:pid", async (req, res) => {
 
 app.delete("/api/products/:pid", async (req, res) => {
     const id = req.params.pid;
-    const resultado = await productManager.deleteProduct(parseInt(id));
-    if (resultado) {
-        res.status(200).send("Producto eliminado");
-    } else {
-        res.status(404).send("No se encuentra el producto");
+    try {
+        const resultado = await productManager.deleteProduct(parseInt(id));
+        if (resultado) {
+            // Emitimos el evento de actualización de productos a través de WebSocket
+            io.emit('productUpdated', await productManager.getProducts());
+            res.status(200).send("Producto eliminado");
+        } else {
+            res.status(404).send("No se encuentra el producto");
+        }
+    } catch (error) {
+        res.status(500).send("Error al eliminar el producto");
     }
 });
 
@@ -120,6 +127,57 @@ app.post("/api/carts/:cid/product/:pid", async (req, res) => {
         res.status(200).send("Producto agregado al carrito");
     } else {
         res.status(404).send("No se encuentra el carrito o producto");
+    }
+});
+
+//carrito actualizado
+app.put("/api/carts/:cid", async (req, res) => {
+    const cartId = parseInt(req.params.cid);
+    const productosActualizados = req.body.products; // Se espera un array de productos en el cuerpo de la solicitud
+
+    try {
+        const resultado = await cartManager.updateCart(cartId, productosActualizados);
+        if (resultado) {
+            res.status(200).send(`Carrito ${cartId} actualizado correctamente`);
+        } else {
+            res.status(404).send("Carrito no encontrado");
+        }
+    } catch (error) {
+        res.status(500).send("Error al actualizar el carrito");
+    }
+});
+
+//actualiza la cantidad de un producto
+app.put("/api/carts/:cid/products/:pid", async (req, res) => {
+    const cartId = parseInt(req.params.cid);
+    const productId = parseInt(req.params.pid);
+    const nuevaCantidad = req.body.quantity; // Se espera que 'quantity' venga en el cuerpo de la solicitud
+
+    try {
+        const resultado = await cartManager.updateProductQuantity(cartId, productId, nuevaCantidad);
+        if (resultado) {
+            res.status(200).send(`Cantidad del producto ${productId} en el carrito ${cartId} actualizada a ${nuevaCantidad}`);
+        } else {
+            res.status(404).send("Carrito o producto no encontrado");
+        }
+    } catch (error) {
+        res.status(500).send("Error al actualizar la cantidad del producto en el carrito");
+    }
+});
+
+app.delete("/api/carts/:cid/products/:pid", async (req, res) => {
+    const cartId = parseInt(req.params.cid);
+    const productId = parseInt(req.params.pid);
+
+    try {
+        const resultado = await cartManager.removeProductFromCart(cartId, productId);
+        if (resultado) {
+            res.status(200).send(`Producto ${productId} eliminado del carrito ${cartId}`);
+        } else {
+            res.status(404).send("Carrito o producto no encontrado");
+        }
+    } catch (error) {
+        res.status(500).send("Error al eliminar el producto del carrito");
     }
 });
 
