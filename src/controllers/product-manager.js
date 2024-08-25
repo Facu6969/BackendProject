@@ -1,139 +1,84 @@
-import { promises as fs } from "fs";
+import ProductModel from "../models/products.model.js";
 
 class ProductManager {
-    static ultId = 0;
-
-    constructor(path) {
-        this.products = [];
-        this.path = path;
-
-        this.cargarArray(); 
-    }
-
-    async cargarArray() {
+    async addProduct(productData) {
         try {
-            this.products = await this.leerArchivo();
+            const nuevoProducto = new ProductModel(productData);
+            await nuevoProducto.save(); // Guardar en MongoDB
+            console.log('Producto agregado:', nuevoProducto);
         } catch (error) {
-            console.log("Error al inicializar ProductManager", error.message);
+            console.log('Error al agregar producto:', error);
         }
     }
 
-    async addProduct({ title, description, code, price, status = true, stock, category, thumbnails = [] }) {
-        if (!title || !description || !code || !price || !stock || !category) {
-            console.log("Todos los campos son obligatorios excepto thumbnails");
-            return;
-        }
-
-        //2) Validacion: 
-
-        if (this.products.some(item => item.code === code)) {
-            console.log("El codigo debe ser unico");
-            return;
-        }
-
-        const lastProductId = this.products.length > 0 ? this.products[this.products.length - 1].id : 0;
-        const nuevoProducto = {
-            id: lastProductId + 1,
-            title,
-            description,
-            code,
-            price,
-            status,
-            stock,
-            category,
-            thumbnails
-        };
-        console.log('Nuevo producto a agregar:', nuevoProducto);
-
-        //4) Metemos el producto al array. 
-        this.products.push(nuevoProducto);
-        console.log('Array de productos después de agregar:', this.products);
-
-        //5) Lo guardamos en el archivo: 
-        await this.guardarArchivo(this.products);
-    }
-
-    async getProducts() {
+    async getProducts({ limit = 10, page = 1, sort, query } = {}) {
         try {
-            const arrayProductos = await this.leerArchivo(); 
-            return arrayProductos;
-        } catch (error) {
-            console.log("Error al leer el archivo", error); 
-        }
+            // Crear el filtro basado en la query proporcionada
+            let filter = {};
+            if (query) {
+                filter = {
+                    $or: [
+                        { category: query },
+                        { status: query === 'available' ? true : false }
+                    ]
+                };
+            }
 
+            // Configurar las opciones de paginación y ordenamiento
+            const options = {
+                limit: parseInt(limit),
+                page: parseInt(page),
+                sort: sort ? { price: sort === 'asc' ? 1 : -1 } : {}
+            };
+
+            // Realizar la consulta con paginación
+            const result = await ProductModel.paginate(filter, options);
+
+            return {
+                status: "success",
+                payload: result.docs,
+                totalPages: result.totalPages,
+                prevPage: result.hasPrevPage ? result.page - 1 : null,
+                nextPage: result.hasNextPage ? result.page + 1 : null,
+                page: result.page,
+                hasPrevPage: result.hasPrevPage,
+                hasNextPage: result.hasNextPage,
+                prevLink: result.hasPrevPage ? `/api/products?page=${result.page - 1}` : null,
+                nextLink: result.hasNextPage ? `/api/products?page=${result.page + 1}` : null
+            };
+        } catch (error) {
+            console.log("Error al obtener productos:", error);
+            throw new Error("Error en el servidor al obtener productos.");
+        }
     }
 
     async getProductById(id) {
         try {
-            const arrayProductos = await this.leerArchivo();
-            const buscado = arrayProductos.find(item => item.id === id);
-            return buscado || null;
+            const producto = await ProductModel.findById(id);
+            return producto;
         } catch (error) {
-            console.log("Error al buscar por id", error);
-            return null;
+            console.log("Error al obtener producto por ID:", error);
         }
     }
 
-    
-    //Método para actualizar productos: 
-
     async updateProduct(id, productoActualizado) {
         try {
-            const arrayProductos = await this.leerArchivo(); 
-            const index = arrayProductos.findIndex(item => item.id === id); 
-
-            if (index !== -1) {
-                arrayProductos[index] = { ...arrayProductos[index], ...productoActualizado };
-                await this.guardarArchivo(arrayProductos); 
-                console.log("Producto actualizado"); 
-            } else {
-                console.log("No se encuentra el producto"); 
-            }
+            const producto = await ProductModel.findByIdAndUpdate(id, productoActualizado, { new: true });
+            console.log("Producto actualizado:", producto);
+            return producto;
         } catch (error) {
-            console.log("Error al actualizar productos", error);
+            console.log("Error al actualizar producto:", error);
         }
     }
 
     async deleteProduct(id) {
         try {
-            const arrayProductos = await this.leerArchivo(); 
-            const index = arrayProductos.findIndex(item => item.id === id); 
-
-            if (index !== -1) {
-                arrayProductos.splice(index, 1); 
-                await this.guardarArchivo(arrayProductos); 
-                console.log("Producto eliminado"); 
-            } else {
-                console.log("No se encuentra el producto"); 
-            }
+            await ProductModel.findByIdAndDelete(id);
+            console.log("Producto eliminado");
         } catch (error) {
-            console.log("Tenemos un error al eliminar productos", error);
+            console.log("Error al eliminar producto:", error);
         }
     }
-
-    async leerArchivo() {
-        try {
-            const respuesta = await fs.readFile(this.path, "utf-8");
-            if (respuesta) {
-                return JSON.parse(respuesta);
-            } else {
-                return [];
-            }
-        } catch (error) {
-            console.log("Error al leer el archivo", error);
-            return [];
-        }
-    }
-
-    async guardarArchivo(arrayProductos) {
-        try {
-            await fs.writeFile(this.path, JSON.stringify(arrayProductos, null, 2));
-            console.log('Archivo guardado exitosamente.');
-        } catch (error) {
-            console.log('Error al guardar el archivo:', error);
-        }
-    }
-
 }
 
-export default ProductManager; 
+export default ProductManager;
