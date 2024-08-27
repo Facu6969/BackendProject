@@ -1,4 +1,5 @@
 import { Router } from "express";
+import mongoose from "mongoose";
 import ProductManager from "../controllers/product-manager.js"; 
 
 const router = Router();
@@ -20,6 +21,13 @@ router.get("/", async (req, res) => {
 
 // Obtener un producto por ID
 router.get("/:pid", async (req, res) => {
+    const { pid } = req.params;
+
+    // Validar ObjectId
+    if (!mongoose.Types.ObjectId.isValid(pid)) {
+        return res.status(400).json({ message: "ID de producto no válido" });
+    }
+
     try {
         const producto = await productManager.getProductById(req.params.pid);
         if (producto) {
@@ -44,6 +52,13 @@ router.post("/", async (req, res) => {
 
 // Actualizar un producto por ID
 router.put("/:pid", async (req, res) => {
+    const { pid } = req.params;
+
+    // Validar ObjectId
+    if (!mongoose.Types.ObjectId.isValid(pid)) {
+        return res.status(400).json({ message: "ID de producto no válido" });
+    }
+
     try {
         const productoActualizado = await productManager.updateProduct(req.params.pid, req.body);
         if (productoActualizado) {
@@ -58,6 +73,12 @@ router.put("/:pid", async (req, res) => {
 
 // Eliminar un producto por ID
 router.delete("/:pid", async (req, res) => {
+    const { pid } = req.params;
+    
+    if (!mongoose.Types.ObjectId.isValid(pid)) {
+        return res.status(400).json({ message: "ID de producto no válido" });
+    }
+
     try {
         const productoEliminado = await productManager.deleteProduct(req.params.pid);
         if (productoEliminado) {
