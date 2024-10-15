@@ -1,26 +1,25 @@
 import { Router } from "express";
 import mongoose from "mongoose";
+import authMiddleware from "../middleware/auth.js";
 import ProductManager from "../controllers/product-manager.js"; 
 
 const router = Router();
 const productManager = new ProductManager(); // Crea una instancia de ProductManager
 
 // Obtener todos los productos
-router.get("/", async (req, res) => {
+router.get('/', authMiddleware(['user', 'admin']), async (req, res) => {
     try {
-        // Pasar los parámetros de query a la función `getProducts`
-        const { limit, page, sort, query } = req.query;
-        const productos = await productManager.getProducts({ limit, page, sort, query });
-
-        res.json(productos);  // Devuelve el objeto con la estructura especificada
+      const { limit, page, sort, query } = req.query; // Opciones de consulta opcionales
+      const productos = await productManager.getProducts({ limit, page, sort, query });
+  
+      res.json(productos); // Devuelve los productos en formato JSON
     } catch (error) {
-        console.log("Error en la consulta:", error); 
-        res.status(500).json({ message: "Error en el servidor" });
+      res.status(500).json({ message: 'Error al obtener los productos', error: error.message });
     }
-});
+  });
 
 // Obtener un producto por ID
-router.get("/:pid", async (req, res) => {
+router.get("/:pid", authMiddleware(['user', 'admin']), async (req, res) => {
     const { pid } = req.params;
 
     // Validar ObjectId
@@ -41,17 +40,17 @@ router.get("/:pid", async (req, res) => {
 });
 
 // Crear un nuevo producto
-router.post("/", async (req, res) => {
+router.post('/', authMiddleware(['admin']), async (req, res) => {
     try {
-        const nuevoProducto = await productManager.addProduct(req.body);
-        res.status(201).json(nuevoProducto);
+      const nuevoProducto = await productManager.addProduct(req.body);
+      res.status(201).json(nuevoProducto);
     } catch (error) {
-        res.status(400).json({ message: "Error al crear el producto", error });
+      res.status(500).json({ message: 'Error al crear el producto', error: error.message });
     }
-});
+  });
 
 // Actualizar un producto por ID
-router.put("/:pid", async (req, res) => {
+router.put("/:pid", authMiddleware(['admin']), async (req, res) => {
     const { pid } = req.params;
 
     // Validar ObjectId
@@ -72,7 +71,7 @@ router.put("/:pid", async (req, res) => {
 });
 
 // Eliminar un producto por ID
-router.delete("/:pid", async (req, res) => {
+router.delete("/:pid", authMiddleware(['admin']), async (req, res) => {
     const { pid } = req.params;
     
     if (!mongoose.Types.ObjectId.isValid(pid)) {
