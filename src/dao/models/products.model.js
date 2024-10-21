@@ -8,7 +8,7 @@ const productSchema = new mongoose.Schema({
     title: { type: String, required: true },
     description: { type: String, required: true },
     price: { type: Number, required: true },
-    img: { type: String, required: true },
+    img: { type: String },
     code: { type: String, required: true, unique: true }, // Campo único para evitar duplicados
     stock: { type: Number, required: true },
     category: { type: String, required: true },
@@ -19,6 +19,5 @@ const productSchema = new mongoose.Schema({
 productSchema.plugin(mongoosePaginate);
 
 const ProductModel = mongoose.model(productsCollection, productSchema);
-console.log('Nombre de la colección:', ProductModel.collection.name);
 
 export default ProductModel;

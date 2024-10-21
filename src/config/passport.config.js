@@ -3,13 +3,13 @@ dotenv.config({ path: '../src/.env' });
 import passport from "passport";
 import local from "passport-local";
 import GitHubStrategy from "passport-github2";
-import UserModel from "../models/user.model.js";
+import UserService from "../services/user.service.js";
 import { createHash, isValidPassword } from "../utils/util.js";
-import { generateToken } from "../utils/jsonwebtoken.js";
 
 const LocalStrategy = local.Strategy;
 
 const initializePassport = () => {
+    // Estrategia de Registro Local
     passport.use("register", new LocalStrategy({
         passReqToCallback: true,
         usernameField: "email"
@@ -17,40 +17,32 @@ const initializePassport = () => {
         const { first_name, last_name, email, age } = req.body;
 
         try {
-            let user = await UserModel.findOne({ email: email });
-            if (user) return done(null, false);
-            
-            let nuevoUser = {
-                first_name,
-                last_name,
-                email,
-                age,
-                password: createHash(password)
-            };
-            let result = await UserModel.create(nuevoUser);
-            return done(null, result);
+            // Usamos el servicio para el registro
+            const userData = { first_name, last_name, email, password: createHash(password), age, role: 'user' };
+            const { newUser } = await UserService.registerUser(userData); // Servicio de registro
+            return done(null, newUser);
         } catch (error) {
             return done(error);
         }
     }));
 
-    passport.use("login", new LocalStrategy({
+     // Estrategia de Login Local
+     passport.use("login", new LocalStrategy({
         usernameField: "email"
     }, async (email, password, done) => {
         try {
-            const user = await UserModel.findOne({ email });
-            if (!user) {
-                return done(null, false, { message: "Usuario no encontrado." });
+            const user = await UserService.getUserByEmail(email);
+            if (!user || !isValidPassword(password, user)) {
+                return done(null, false, { message: "Credenciales inválidas" });
             }
-            if (!isValidPassword(password, user)) 
-                return done(null, false, { message: "Contraseña incorrecta." });
 
             const token = generateToken({
                 id: user._id,
                 first_name: user.first_name,
                 last_name: user.last_name,
                 email: user.email,
-              });
+            });
+
             return done(null, { user, token });
         } catch (error) {
             return done(error);
@@ -62,8 +54,12 @@ const initializePassport = () => {
     });
 
     passport.deserializeUser(async (id, done) => {
-        let user = await UserModel.findById({ _id: id });
-        done(null, user);
+        try {
+            const user = await UserService.getUserById(id); // Usamos el servicio para encontrar el usuario
+            done(null, user);
+        } catch (error) {
+            done(error, null);
+        }
     });
 
     passport.use("github", new GitHubStrategy({
@@ -73,24 +69,19 @@ const initializePassport = () => {
  
     }, async (accessToken, refreshToken, profile, done) => {
         console.log("profile:", profile);
-
         try {
             let email = profile._json.email || `${profile.username}@github.com`;
-            let user = await UserModel.findOne({ email });
+            const userData = {
+                first_name: profile._json.name || 'Usuario',
+                last_name: profile._json.last_name || '',
+                email,
+                age: profile._json.age || null,
+                password: ""
+            };
 
-            if (!user) {
-                let newUser = {
-                    first_name: profile._json.name || 'Usuario',
-                    email,
-                    password: "",
-                    ...(profile._json.last_name ? { last_name: profile._json.last_name } : {}),
-                    ...(profile._json.age ? { age: profile._json.age } : {})
-                };
-                let result = await UserModel.create(newUser);
-                done(null, result);
-            } else {
-                done(null, user);
-            }
+            // Buscar o crear el usuario usando el servicio
+            const user = await UserService.findOrCreateGitHubUser(userData); 
+            return done(null, user);
         } catch (error) {
             return done(error);
         }
