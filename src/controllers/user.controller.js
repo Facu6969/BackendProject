@@ -4,7 +4,7 @@ class UserController {
     async register(req, res) {
         try {
             const { newUser, token } = await UserService.registerUser(req.body);
-            res.status(201).send({ message: "Usuario creado con éxito", token });
+            res.status(201).send({ message: "Usuario creado con éxito", token, user: newUser });
         } catch (error) {
             console.error("Error en la creación del usuario:", error);
             res.status(400).send(error.message);
@@ -13,7 +13,12 @@ class UserController {
 
     async login(req, res) {
         try {
-            const { user, token } = await UserService.loginUser(req.body.email, req.body.password);
+            const { success, token, message } = await UserService.loginUser(req.body.email, req.body.password);
+            if (!success) {
+                // Si las credenciales no son válidas, envía un mensaje claro
+                return res.status(401).send(message);
+            }
+
             res.cookie('token', token, {
                 httpOnly: true,
                 sameSite: 'strict',
@@ -22,7 +27,7 @@ class UserController {
             }).send({ message: 'Login correcto', token });
         } catch (error) {
             console.error("Error al logear usuario:", error);
-            res.status(401).send(error.message);
+            res.status(500).send("Error en el servidor");
         }
     }
 
@@ -39,8 +44,19 @@ class UserController {
     async current(req, res) {
         try {
             const token = req.cookies.token;
+
+            console.log('Token en current:', token);
+
             const user = await UserService.getCurrentUser(token);
-            res.status(200).send(user);
+
+            console.log('Usuario en current:', user);
+
+            res.status(200).json({
+                first_name: user.first_name,
+                last_name: user.last_name,
+                email: user.email,
+                role: user.role
+              });
         } catch (error) {
             res.status(401).send("No se pudo obtener el usuario");
         }

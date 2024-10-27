@@ -3,12 +3,15 @@ import { verifyToken } from '../utils/jsonwebtoken.js';
 const authMiddleware = (roles = []) => {
   return (req, res, next) => {
     const token = req.cookies.token; // Leer el token desde las cookies
+    console.log('Token recibido:', token);
 
     if (!token) {
       return res.status(401).json({ message: 'No se proporcionó ningún token' });
     }
 
     const user = verifyToken(token); // Verificar el token
+
+    console.log('Usuario autenticado:', user);
 
     if (!user) {
       return res.status(401).json({ message: 'Token inválido o expirado' });

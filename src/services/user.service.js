@@ -36,7 +36,7 @@ class UserService {
     async loginUser(email, password) {
         const user = await UserRepository.findUserByEmail(email);
         if (!user || !isValidPassword(password, user)) {
-            throw new Error("Credenciales inválidas");
+            return { success: false, message: "Credenciales inválidas" };
         }
 
         const token = generateToken({
@@ -46,7 +46,7 @@ class UserService {
             role: user.role
         });
 
-        return { user, token };
+        return { success: true, token }; // Devuelve el token si todo es correcto
     }
 
     async getCurrentUser(token) {
