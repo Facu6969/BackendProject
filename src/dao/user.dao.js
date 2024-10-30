@@ -12,6 +12,20 @@ class UserDAO {
     async findUserById(id) {
         return await UserModel.findById(id);
     }
+
+    // Método para buscar por token de verificación
+    async findByVerificationToken(verificationToken) {
+        return await UserModel.findOne({ verificationToken });
+    }
+
+    // Método para actualizar la verificación del usuario
+    async verifyUser(id) {
+        return await UserModel.findByIdAndUpdate(
+            id,
+            { isVerified: true, verificationToken: null },
+            { new: true }
+        );
+    }
 }
 
 export default new UserDAO();

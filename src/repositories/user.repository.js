@@ -12,6 +12,14 @@ class UserRepository {
     async findUserById(id) {
         return await UserDAO.findUserById(id);
     }
+
+    async findByVerificationToken(verificationToken) {
+        return await UserDAO.findByVerificationToken(verificationToken);
+    }
+
+    async verifyUser(id) {
+        return await UserDAO.verifyUser(id);
+    }
 }
 
 export default new UserRepository();

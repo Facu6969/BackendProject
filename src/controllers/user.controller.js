@@ -3,8 +3,9 @@ import UserService from "../services/user.service.js"
 class UserController {
     async register(req, res) {
         try {
-            const { newUser, token } = await UserService.registerUser(req.body);
-            res.status(201).send({ message: "Usuario creado con éxito", token, user: newUser });
+            await UserService.registerUser(req.body);
+            console.log("Usuario creado con éxito");
+            res.status(201).redirect("/login");
         } catch (error) {
             console.error("Error en la creación del usuario:", error);
             res.status(400).send(error.message);
@@ -24,10 +25,28 @@ class UserController {
                 sameSite: 'strict',
                 secure: false,
                 maxAge: 86400000,
-            }).send({ message: 'Login correcto', token });
+            });
+            res.redirect("/products");
+
         } catch (error) {
             console.error("Error al logear usuario:", error);
             res.status(500).send("Error en el servidor");
+        }
+    }
+
+    async verifyUser(req, res) {
+        try {
+            const { verificationToken } = req.params;
+            const user = await UserService.verifyUser(verificationToken);
+
+            if (!user) {
+                return res.status(400).send("Token de verificación inválido o expirado.");
+            }
+
+            res.redirect('/login'); // Redirige al login después de la verificación exitosa
+        } catch (error) {
+            console.error("Error en la verificación del usuario:", error);
+            res.status(500).send("Error en la verificación del usuario.");
         }
     }
 

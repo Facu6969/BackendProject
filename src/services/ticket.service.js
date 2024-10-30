@@ -1,21 +1,20 @@
-import TicketModel from "../dao/models/ticket.model.js";
+import TicketRepository from "../repositories/ticket.repository.js";
 import { v4 as uuidv4 } from "uuid";
 
 class TicketService {
     async createTicket({ amount, purchaser }) {
         try {
-            const code = uuidv4(); // Generar un código único para el ticket
-            const newTicket = new TicketModel({
-                code,
+            const ticketData = {
+                code: uuidv4(), // Genera un código único
+                purchase_datetime: new Date(),
                 amount,
-                purchaser,
-            });
-
-            await newTicket.save();
+                purchaser
+            };
+            const newTicket = await TicketRepository.createTicket(ticketData);
             return newTicket;
         } catch (error) {
             console.error("Error al crear el ticket:", error);
-            throw new Error("Error al crear el ticket");
+            throw new Error("No se pudo crear el ticket");
         }
     }
 

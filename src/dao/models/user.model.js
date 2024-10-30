@@ -32,7 +32,12 @@ const userSchema = new mongoose.Schema({
     role: {
         type: String,
         default: "user" 
-    }
+    },
+    isVerified: {
+        type: Boolean,
+        default: false
+    },
+    verificationToken: String
 })
 
 const UserModel = mongoose.model("user", userSchema);

@@ -1,6 +1,6 @@
 import { Router } from "express";
 import ProductModel from "../dao/models/products.model.js";
-import authMiddleware from "../middleware/auth.js"; 
+import authMiddleware from "../middleware/auth.js";
 
 const router = Router();
 
@@ -29,14 +29,18 @@ router.get('/realtimeproducts', authMiddleware(['admin']), async (req, res) => {
 // Ruta para mostrar el formulario de login
 router.get('/login', (req, res) => {
     try {
-      if (req.user) {
-        return res.redirect('/products'); // Redirigir a productos si ya está autenticado
-      }
-      res.render('login'); // Renderizar la vista de login
+        if (req.user) {
+            return res.redirect('/products'); // Redirigir a productos si ya está autenticado
+        }
+        res.render('login'); // Renderizar la vista de login
     } catch (error) {
-      console.error('Error al mostrar el login:', error.message);
-      res.status(500).send('Error al cargar la página de login');
+        console.error('Error al mostrar el login:', error.message);
+        res.status(500).send('Error al cargar la página de login');
     }
-  });
-  
+});
+
+router.get("/register", (req, res) => {
+    res.render("register"); // Asegúrate de tener la vista `register.handlebars` en la carpeta `views`
+});
+
 export default router;

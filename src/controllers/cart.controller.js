@@ -78,6 +78,31 @@ class CartController {
             res.status(500).json({ message: "Error al vaciar el carrito", error: error.message });
         }
     }
+//manejamos la compra de los productos del carrito
+    async purchaseCart(req, res) {
+        try {
+            const { cid } = req.params;
+            const user = req.user; 
+            
+            // Procesar la compra
+            const { ticket, unavailableProducts } = await CartService.purchaseCart(cid, user.email);
+
+            if (ticket) {
+                res.status(201).json({
+                    message: "Compra realizada con éxito",
+                    ticket,
+                    unavailableProducts
+                });
+            } else {
+                res.status(400).json({
+                    message: "No se pudo realizar la compra de ningún producto",
+                    unavailableProducts
+                });
+            }
+        } catch (error) {
+            res.status(500).json({ message: "Error al procesar la compra", error: error.message });
+        }
+    }
 }
 
 export default new CartController();

@@ -9,6 +9,8 @@ router.post("/register", UserController.register);
 
 router.post("/login", UserController.login);
 
+router.get('/verify/:verificationToken', UserController.verifyUser);
+
 router.get('/logout', authMiddleware(['user', 'admin']), UserController.logout);
 
 router.get("/github", passport.authenticate("github", { scope: ["user:email"] }));

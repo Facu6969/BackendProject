@@ -12,6 +12,9 @@ router.post('/:cid/product/:pid', authMiddleware(['user']), CartController.addPr
 
 router.put('/:cid', authMiddleware(['user']), CartController.updateCart);
 
+// Ruta para procesar la compra del carrito
+router.post('/:cid/purchase', authMiddleware(['user']), CartController.purchaseCart);
+
 // Actualizar la cantidad de un producto en el carrito 
 router.put('/:cid/products/:pid', authMiddleware(['user']), CartController.updateProductQuantity);
 
