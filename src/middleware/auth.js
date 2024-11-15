@@ -1,5 +1,27 @@
 import { verifyToken } from '../utils/jsonwebtoken.js';
 
+export const requireAuth = (req, res, next) => {
+  if (req.path === '/login' || req.path === '/register' || req.path.startsWith("/api/sessions")) {
+    return next();
+  }
+
+  const token = req.cookies.token;
+  console.log('Token recibido:', token);
+
+  if (!token) {
+    return res.redirect('/login');
+  }
+
+  const user = verifyToken(token);
+
+  if (!user) {
+    return res.redirect('/login');
+  }
+
+  req.user = user;
+  next();
+};
+
 const authMiddleware = (roles = []) => {
   return (req, res, next) => {
     const token = req.cookies.token; // Leer el token desde las cookies

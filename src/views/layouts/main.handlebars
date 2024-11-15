@@ -17,7 +17,7 @@
             <a href="/">Inicio</a>
             <a href="/cart">Carrito</a>
             <a href="/profile">Mi Cuenta</a>
-            {{#if isAuthenticated}}
+            {{#if user}}
             <a href="/api/sessions/logout">Cerrar sesión</a>
             {{else}}
             <a href="/login">Iniciar sesión</a>

@@ -14,6 +14,7 @@ import sessionRouter from "./routes/session.router.js";
 import connectDB from "./db.js";
 import setupSocket from "./socket.js"
 import initializePassport from "./config/passport.config.js";
+import { requireAuth } from "./middleware/auth.js";
 
 
 const app = express();
@@ -46,6 +47,8 @@ app.use(session({
 initializePassport();
 app.use(passport.initialize());
 app.use(passport.session());
+//redirección al login
+app.use(requireAuth);
 
 app.use("/api/sessions", sessionRouter);
 app.use("/api/products", productsRouter); // Usar el router de productos
